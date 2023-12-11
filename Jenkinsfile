@@ -83,6 +83,20 @@ pipeline{
             }
         }
 
+<<<<<<< HEAD
+=======
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                "URL: ${env.BUILD_URL}<br/>",
+            to: 'technelogics1@gmail.com',
+            attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+        }
+>>>>>>> 8b7a8e502d98f5f5a8843713ef30bc25697c8e93
     }
     post {
      always {
