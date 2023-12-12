@@ -58,10 +58,12 @@ pipeline {
         }
         stage("Docker Image Push") {
             steps {
-                    script {
-                        sh 'docker login -u nelzone -p Dearlord@85 https://hub.docker.com/repository/docker/nelzone/netflix'
+                script {
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){
+                        sh 'docker login -u nelzone -p ${docker}'
                         sh 'docker push nelzone/netflix:latest'
                     }
+                }
             }
         }
         stage("TRIVY") {
