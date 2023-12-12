@@ -21,8 +21,8 @@ pipeline {
         stage("Sonarqube Analysis ") {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \
-                    -Dsonar.projectKey=Netflix '''
+                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \
+                    -Dsonar.projectKey=Netflix'''
                 }
             }
         }
@@ -49,11 +49,17 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-        stage("Docker Build & Push") {
+        stage("Docker Image Build") {
+            steps {
+                script {
+                    sh "docker build --build-arg TMDB_V3_API_KEY=5edd2e2e3c8a3beb1247646638eec159 -t netflix ."
+                }
+            }
+        }
+        stage("Docker Image Push") {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
-                        sh "docker build --build-arg TMDB_V3_API_KEY=5edd2e2e3c8a3beb1247646638eec159 -t netflix ."
                         sh "docker tag netflix nelzone/netflix:latest"
                         sh "docker push nelzone/netflix:latest"
                     }
@@ -70,7 +76,7 @@ pipeline {
                 sh 'docker run -d -p 8081:80 nelzone/netflix:latest'
             }
         }
-        stage('Deploy to kubernets') {
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
                     dir('Kubernetes') {
@@ -86,12 +92,12 @@ pipeline {
     post {
         always {
             emailext attachLog: true,
-                subject: "'${currentBuild.result}'",
-                body: "Project: ${env.JOB_NAME}<br/>" +
-                    "Build Number: ${env.BUILD_NUMBER}<br/>" +
-                    "URL: ${env.BUILD_URL}<br/>",
-                to: 'technelogics1@gmail.com',
-                attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                  "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                  "URL: ${env.BUILD_URL}<br/>",
+            to: 'technelogics1@gmail.com',
+            attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
         }
     }
 }
