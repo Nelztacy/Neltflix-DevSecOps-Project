@@ -60,8 +60,8 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
-                        sh "docker tag netflix nelzone/netflix:latest"
-                        sh "docker push nelzone/netflix:latest"
+                        sh "docker tag netflix nelzone/netflix:latest "
+                        sh "docker push nelzone/netflix:latest "
                     }
                 }
             }
