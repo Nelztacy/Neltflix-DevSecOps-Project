@@ -6,6 +6,7 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
+        DOCKERHUB_CREDENTIALS = credentials('docker')
     }
     stages {
         stage('clean workspace') {
@@ -56,14 +57,15 @@ pipeline {
                 }
             }
         }
-        stage("Docker Image Push") {
+        stage(Docker Login) {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
-                        sh "docker tag netflix nelzone/netflix:latest"
-                        sh "docker push nelzone/netflix:latest"
-                    }
-                }
+                sh "echo $DOCKERHUB_CREDENTIALS_PWS | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+            }
+        }
+        stage('Docker Tag and Push') {
+            steps {
+                sh "docker tag netflix nelzone/netflix:latest"
+                sh "docker push nelzone/netflix:latest"
             }
         }
         stage("TRIVY") {
@@ -73,7 +75,7 @@ pipeline {
         }
         stage('Deploy to container') {
             steps {
-                sh 'docker run -d -p 8081:80 nelzone/netflix:latest'
+                sh "docker run -d -p 8081:80 nelzone/netflix:latest"
             }
         }
         stage('Deploy to Kubernetes') {
