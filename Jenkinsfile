@@ -49,19 +49,15 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-        stage("Docker Image Build") {
-            steps {
-                script {
-                    sh "docker build --build-arg TMDB_V3_API_KEY=5edd2e2e3c8a3beb1247646638eec159 -t netflix ."
-                }
-            }
-        }
-        stage("Docker Image Push") {
-            steps {
-                    script {
-                        sh 'docker login -u nelzone -p Dearlord@85 https://hub.docker.com/repository/docker/nelzone/netflix'
-                        sh 'docker push nelzone/netflix:latest'
+        stage("Docker Build & Push"){
+            steps{
+                script{
+                   withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){   
+                       sh "docker build --build-arg TMDB_V3_API_KEY=5edd2e2e3c8a3beb1247646638eec159 -t netflix ."
+                       sh "docker tag netflix nelzone/netflix:latest "
+                       sh "docker push nelzone/netflix:latest "
                     }
+                }
             }
         }
         stage("TRIVY") {
