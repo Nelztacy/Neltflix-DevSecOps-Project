@@ -7,6 +7,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
         registry = 'nelzone/netflix'
+        registryCredential = 'docker'
     }
     stages {
         stage('clean workspace') {
@@ -60,9 +61,8 @@ pipeline {
         stage("Docker Image Push") {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){
-                        sh 'docker login -u nelzone -p ${docker}'
-                        sh 'docker push nelzone/netflix:latest'
+                    docker.withRegistry(', registryCredential '){
+                    dockerImage.push()
                     }
                 }
             }
