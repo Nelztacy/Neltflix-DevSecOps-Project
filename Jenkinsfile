@@ -6,6 +6,8 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
+        registry = 'nelzone/netflix'
+        registryCredential = 'docker'
     }
     stages {
         stage('clean workspace') {
